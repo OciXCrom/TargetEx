@@ -3,14 +3,41 @@
 #endif
 #define _targetex_included
 
-#if AMXX_VERSION_NUM < 190
-	#error cmd_targetex() requires AMXX version 1.9 or above. Please update: https://www.amxmodx.org/downloads-new.php
-#endif
-
 #define TARGETEX_VERSION 1.0
 
 #include <amxmisc>
 #include <engine>
+
+#if !defined MAX_PLAYERS
+const MAX_PLAYERS = 32
+#endif
+
+#if !defined MAX_NAME_LENGTH
+const MAX_NAME_LENGTH = 32
+#endif
+
+#if !defined GetPlayersFlags
+enum GetPlayersFlags (<<= 1)
+{
+    GetPlayers_None = 0,           // No filter (Default)
+    GetPlayers_ExcludeDead = 1,    // Do not include dead clients
+    GetPlayers_ExcludeAlive,       // Do not include alive clients
+    GetPlayers_ExcludeBots,        // Do not include bots
+    GetPlayers_ExcludeHuman,       // Do not include human clients
+    GetPlayers_MatchTeam,          // Match with team
+    GetPlayers_MatchNameSubstring, // Match with part of name
+    GetPlayers_CaseInsensitive,    // Match case insensitive
+    GetPlayers_ExcludeHLTV,        // Do not include HLTV proxies
+    GetPlayers_IncludeConnecting   // Include connecting clients
+};
+
+stock get_players_ex(players[MAX_PLAYERS] = {}, &num, GetPlayersFlags:flags = GetPlayers_None, const team[] = "")
+{
+	new strFlags[10];
+	get_flags(_:flags, strFlags, charsmax(strFlags));
+	get_players(players, num, strFlags, team);
+}
+#endif
 
 /**
  * Selectors used with cmd_targetex()
@@ -353,7 +380,7 @@ stock cmd_targetex(id, const arg[], players[MAX_PLAYERS], name[], len, TargetexF
 
 				if(bExceptMe)
 				{
-					add(name, len, fmt(" %L", LANG_PLAYER, "TARGETEX_EXCEPT_HIMSELF"));
+					format(name, len, "%s %L", name, LANG_PLAYER, "TARGETEX_EXCEPT_HIMSELF");
 				}
 			}
 		}
